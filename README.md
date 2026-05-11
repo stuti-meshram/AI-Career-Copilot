@@ -1,4 +1,4 @@
-# AI-Career-Copilot# 🚀 AI Career Copilot — Mini Project
+# AI-Career-Copilot# 🚀 
 
 > A smart AI agent that finds jobs, conducts mock interviews, reviews resumes, and guides your career — powered by Claude AI.
 
