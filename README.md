@@ -1,40 +1,74 @@
-# AI-Career-Copilot# 🚀 
+# ✦ CareerAI — AI Career Copilot Agent 
 
-> A smart AI agent that finds jobs, conducts mock interviews, reviews resumes, and guides your career — powered by Claude AI.
+> An AI-powered career assistant with multi-agent routing — finds jobs, preps you for interviews, and reviews your resume. Built with React + Claude API.
 
-![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square&logo=python)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green?style=flat-square&logo=fastapi)
-![Claude](https://img.shields.io/badge/Claude-Sonnet%204-purple?style=flat-square)
-![FAISS](https://img.shields.io/badge/FAISS-1.9-orange?style=flat-square)
+![CareerAI Demo](https://img.shields.io/badge/status-working-brightgreen) ![React](https://img.shields.io/badge/React-18-blue) ![Claude](https://img.shields.io/badge/Claude-Sonnet_4-purple) ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
 
-## 🎯 What It Does
+## 🎯 What Is This?
 
-| Agent | Trigger Keywords | Example |
-|-------|-----------------|---------|
-| 🔍 **Job Agent** | "find jobs", "hiring", "openings" | *"Find backend jobs in Pune"* |
-| 🎯 **Interview Agent** | "interview", "DSA", "mock", "question" | *"Ask me array problems"* |
-| 📄 **Resume Agent** | "resume", "CV", "improve", "ATS" | *"Review my resume"* |
-| 🧭 **Career Coach** | everything else | *"How to get 20 LPA?"* |
+A **mini project** version of a production AI Career Copilot. It demonstrates:
+
+- **Multi-agent routing** — one controller, four specialized agents
+- **Tool use** — web search for live job listings
+- **RAG-lite** — resume text injected into context for analysis
+- **Streaming-ready architecture** — per-agent conversation memory
+- **Production patterns** — proper error handling, cost-aware context trimming
+
+This is intentionally a **mini** (frontend-only) version. See [Production Roadmap](#-production-roadmap) for what the full version would add.
 
 ---
 
-## 🏗 Architecture
+## 🤖 Agents
+
+| Agent | Mode | Web Search | Use Case |
+|-------|------|-----------|----------|
+| **✦ Auto Pilot** | Controller | ✅ Yes | Routes automatically by intent |
+| **◈ Job Hunter** | Specialist | ✅ Yes | Finds live job openings |
+| **⬡ Interview Prep** | Specialist | ❌ No | DSA, system design, behavioral Q&A |
+| **▣ Resume AI** | Specialist | ❌ No | ATS scoring, rewrites, keywords |
+
+### How Routing Works
 
 ```
 User Query
     │
     ▼
-Controller Agent  ──── classifies intent (1 LLM call)
+Auto Pilot (Claude)
     │
-    ├──▶ Job Agent        → generates job listings
-    ├──▶ Interview Agent  → Q&A, mock interviews
-    ├──▶ Resume Agent     → RAG on uploaded resume
-    └──▶ Career Coach     → general career advice
+    ├─ "find jobs / openings" ──────► Job Hunter (+ web_search tool)
+    ├─ "DSA / interview / mock" ────► Interview Prep
+    ├─ "resume / CV / ATS" ─────────► Resume AI (+ resume context)
+    └─ Career advice ───────────────► General LLM response
+```
 
-Resume RAG Pipeline:
-  Upload (.txt/.pdf) → Chunk → Embed (MiniLM) → FAISS Index → Retrieve on query
+---
+
+## 🚀 Quick Start
+
+### 1. Clone & Install
+
+```bash
+git clone https://github.com/yourusername/ai-career-copilot.git
+cd ai-career-copilot
+npm install
+```
+
+### 2. Set up API Key
+
+```bash
+cp .env.example .env.local
+# Edit .env.local and add your Anthropic API key
+```
+
+Get your API key at [console.anthropic.com](https://console.anthropic.com/)
+
+### 3. Run
+
+```bash
+npm run dev
+# Open http://localhost:5173
 ```
 
 ---
@@ -43,150 +77,133 @@ Resume RAG Pipeline:
 
 ```
 ai-career-copilot/
-├── backend/
-│   ├── main.py           # FastAPI app (all routes)
-│   ├── agents.py         # Controller + 4 sub-agents
-│   ├── rag.py            # Resume RAG with FAISS
-│   ├── requirements.txt
-│   └── .env.example
-├── frontend/
-│   └── index.html        # Single-file chat UI
-├── .gitignore
-└── README.md
+├── src/
+│   ├── App.jsx          # Entire app — agents, API, UI components
+│   ├── main.jsx         # React entry point
+│   └── index.css        # Global reset & base styles
+├── index.html           # HTML shell
+├── vite.config.js       # Vite + dev proxy config
+├── package.json
+├── .env.example         # ← copy to .env.local, add your key
+└── .gitignore
+```
+
+> **Why one file?** This is a **mini project**. For production, split into `agents/`, `components/`, `api/`, `hooks/` folders.
+
+---
+
+## 💬 Usage Examples
+
+### Find Jobs
+```
+"Find React developer jobs in Bangalore"
+"Remote Python backend roles in India"
+"SDE-2 positions at product companies"
+```
+
+### Interview Prep
+```
+"Give me 3 medium array problems"
+"System design: Design YouTube"
+"Behavioral: Tell me about a conflict you resolved"
+"Mock interview me for Amazon SDE-1"
+```
+
+### Resume Review
+1. Click **Add Resume** in the sidebar
+2. Paste your resume text
+3. Type: *"Analyze my resume for SDE-2 roles"*
+4. Get: ATS score, issues, rewrites, missing keywords
+
+### Auto Mode
+```
+"I'm a fresher looking for frontend jobs in Pune"
+→ Auto detects → Job Hunter response with live listings
 ```
 
 ---
 
-## ⚡ Quick Start
+## 🧠 Architecture Decisions (Mini vs Production)
 
-### 1. Clone & Setup
-
-```bash
-git clone https://github.com/YOUR_USERNAME/ai-career-copilot.git
-cd ai-career-copilot/backend
-
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### 2. Configure API Key
-
-```bash
-cp .env.example .env
-# Edit .env and add your Anthropic API key
-# Get one at: https://console.anthropic.com
-```
-
-### 3. Run the Server
-
-```bash
-uvicorn main:app --reload --port 8000
-```
-
-### 4. Open the App
-
-Open `frontend/index.html` in your browser  
-*(or navigate to `http://localhost:8000` if serving via FastAPI)*
+| Concern | Mini (This) | Production |
+|---------|------------|------------|
+| **Routing** | Prompt-based intent detection | LangChain agent + tool calls |
+| **Memory** | In-component state | PostgreSQL + Redis |
+| **Resume** | Paste as text | PDF upload + FAISS vector DB |
+| **Job Search** | Claude web_search tool | Dedicated scraper + Naukri/LinkedIn API |
+| **Auth** | None | NextAuth / JWT |
+| **Cost control** | Last-10-msg context window | Token budget per user |
+| **Deployment** | Static (Vercel/Netlify) | Docker + AWS/Render |
 
 ---
 
-## 🔑 Environment Variables
+## ⚙️ Tech Stack
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `ANTHROPIC_API_KEY` | ✅ Yes | Get from console.anthropic.com |
-
----
-
-## 📡 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/session/new` | Create a new chat session |
-| `DELETE` | `/session/{id}` | Delete a session |
-| `POST` | `/resume/upload` | Upload resume file |
-| `GET` | `/resume/status` | Check if resume is loaded |
-| `POST` | `/chat` | Send a message, get agent response |
-| `DELETE` | `/chat/history` | Clear conversation history |
-| `GET` | `/health` | Health check |
-
-**Interactive docs:** `http://localhost:8000/docs`
-
----
-
-## 💬 Example Queries
-
-```
-"Find Python developer jobs in Bangalore with 3 years experience"
-"Ask me a medium difficulty graph problem"
-"Mock interview me for a backend engineering role at a startup"
-"What's missing from my resume for a DevOps role?"
-"How do I transition from QA to software development?"
-"Should I join a startup or a big company at 2 YOE?"
-```
-
----
-
-## 🧠 How the RAG Works
-
-1. You upload your resume (`.txt` or `.pdf`)
-2. It's split into **overlapping chunks** (200 words, 30-word overlap)
-3. Each chunk is embedded with **`all-MiniLM-L6-v2`** (384-dim)
-4. Stored in a **FAISS flat index** (in-memory, per session)
-5. On resume queries, the **top-4 relevant chunks** are retrieved and injected into the Resume Agent's prompt
-
----
-
-## 🛠 Tech Stack
-
-| Layer | Tech | Why |
+| Layer | Tool | Why |
 |-------|------|-----|
-| LLM | Claude Sonnet 4 | Best quality/cost ratio |
-| API | FastAPI | Fast, auto-docs, async |
-| Embeddings | sentence-transformers `all-MiniLM-L6-v2` | Fast, free, good quality |
-| Vector DB | FAISS (in-memory) | No infra needed for mini project |
-| Frontend | Vanilla HTML/CSS/JS | Zero dependencies |
-| Session | Python dict (in-memory) | Simple for mini project |
+| UI | React 18 | Component state per agent |
+| Build | Vite | Fast dev + tree shaking |
+| LLM | Claude Sonnet 4 | Best price/performance ratio |
+| Search | Anthropic web_search tool | No third-party API needed |
+| Styling | Inline CSS + CSS-in-JS | Zero dependencies |
+| Fonts | DM Sans + JetBrains Mono | Clean + developer-friendly |
 
 ---
 
-## ⚠ Mini Project Limitations
+## 🔒 Security Notes
 
-This is a simplified version. Production upgrades would include:
+⚠️ **This mini project calls the Anthropic API directly from the browser.** This is fine for local development and demos, but for production:
 
-| Feature | Mini Project | Production |
-|---------|-------------|------------|
-| Sessions | In-memory dict | PostgreSQL / Redis |
-| Vector DB | FAISS in-memory | Pinecone / Weaviate |
-| Job search | AI-generated listings | Real API (Naukri, LinkedIn) |
-| Auth | None | JWT / OAuth |
-| Resume | Text only | PDF parser + image OCR |
-| Deployment | Local | Docker + AWS/Render |
-| Scalability | Single process | Multiple workers + load balancer |
+1. **Never ship your API key in frontend code**
+2. Add a backend proxy (Node/FastAPI) that adds the key server-side
+3. Add rate limiting + auth per user
+4. The `vite.config.js` proxy handles this in dev mode
 
 ---
 
-## 🚢 Deployment (Render.com)
+## 💰 Cost Optimization
 
-```bash
-# render.yaml (create in root)
-services:
-  - type: web
-    name: career-copilot
-    env: python
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: ANTHROPIC_API_KEY
-        sync: false
-```
+The mini project uses these techniques to minimize API costs:
+
+- `max_tokens: 1000` — capped response length
+- **Context window trimming** — only last 10 messages sent per request
+- **No streaming** — single complete response (streaming uses same tokens)
+- **Selective web search** — only Job Hunter + Auto use it (costs more)
+- **No embeddings** — resume injected as plain text (no vector DB costs)
+
+Estimated cost per typical session: **< $0.05**
+
+---
+
+## 🗺️ Production Roadmap
+
+What you'd add for a real product:
+
+- [ ] **FastAPI backend** — handles auth, rate limiting, key security
+- [ ] **PostgreSQL** — user accounts, chat history, saved jobs
+- [ ] **FAISS / Pinecone** — vector embeddings for resume RAG
+- [ ] **PDF upload** — parse and chunk resume automatically
+- [ ] **LangChain agents** — proper tool-calling agent loop
+- [ ] **Real job APIs** — Naukri API / LinkedIn Scraper / Adzuna
+- [ ] **Streaming responses** — better UX for long answers
+- [ ] **Docker + CI/CD** — containerized, deployable anywhere
+- [ ] **Analytics** — track which features users use most
 
 ---
 
 ## 🤝 Contributing
 
-1. Fork the repo
-2. Create a branch: `git checkout -b feature/real-job-api`
-3. Commit: `git commit -m "Add Naukri job search integration"`
-4. Push & PR
+PRs welcome! Especially for:
+- Adding more agent types (Salary Negotiation, Cover Letter)
+- Improving the markdown renderer
+- Adding the FastAPI backend layer
+
+---
+
+## 📄 License
+
+MIT — use freely, credit appreciated.
+
+---
+
+Built with ❤️ using [Claude API](https://anthropic.com) | For learning & portfolio purposes
